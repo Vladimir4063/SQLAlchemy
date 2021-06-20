@@ -1,4 +1,3 @@
-from itertools import product
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy #de esta forma interactuamos mas facil con la BBDD
 from flask_marshmallow import Marshmallow
@@ -27,7 +26,7 @@ db.create_all() #Crea todas las tablas especificadas
 #Esquema que interactua
 class RopaInfo(ma.Schema):
     class Meta: 
-        fields = ('id', 'produc', 'desc', 'addres')
+        fields = ('id', 'produc', 'desc', 'addres') #campos
 
 ropa_info = RopaInfo() #envia una sola respuesta
 ropas_info = RopaInfo(many = True) #Devuelve varias respuesta
@@ -36,12 +35,23 @@ ropas_info = RopaInfo(many = True) #Devuelve varias respuesta
 def index():
     return jsonify({'message':'Welcome to my API'})
 
-@app.route('/ropa')
+@app.route('/POST-ropa', methods = ['POST'])
 def create_ropa():
     product = request.json['product']
     desc = request.json['desc']
+    addres = request.json['desc']
 
-    new_Ropa = Ropa(product, desc) #save is ropaif __name__ == "__main__":
-    
+    new_Ropa = Ropa(product, desc, addres) #save is ropaif __name__ == "__main__":
+    db.session.add(new_Ropa) #Asigna la tarea en BBDD
+    db.session.commit() #termino operacion
+
+    return ropa_info.jsonify(new_Ropa) #Vemos por consola lo que envias al bbdd
+
+@app.route('/GET-ropa')
+def get_ropa():
+    all_ropas = Ropa.query.all()
+    result = ropas_info.dump(all_ropas)
+    return jsonify(result)
+
 if __name__ == "__main__":
     app.run(debug = True)
